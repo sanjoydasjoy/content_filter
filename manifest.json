@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Content Filter",
+  "version": "1.0",
+  "description": "Utilizes AI to improve user browsing experiences by automatically identifying and obscuring content that users may find undesirable, such as age-restricted materials, not-safe-for-work (NSFW) images, and explicit language.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "icons" :{
+    "128": "logo2.png"
+    },
+"permissions": [
+    "activeTab","storage"
+]
+}
