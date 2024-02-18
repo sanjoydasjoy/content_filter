@@ -10,6 +10,20 @@
     "128": "logo2.png"
     },
 "permissions": [
-    "activeTab","storage"
+    "activeTab","storage","scripting"
+]
+,
+"host_permissions": [
+  "https://api.openai.com/v1/images/" 
+],
+"background": {
+  "service_worker": "background.js"
+},
+"content_scripts": [
+  {
+    "matches": ["<all_urls>"],
+    "js": ["content.js"],
+    "run_at": "document_idle"
+  }
 ]
 }
