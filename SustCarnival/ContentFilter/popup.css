@@ -1,0 +1,83 @@
+/* Basic styling for the popup */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+.container {
+  width: 300px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+#quote {
+  font-size: 20px;
+  font-style: italic;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+button#addBtn {
+  background-color: #3498db;
+  color: white;
+}
+
+button#addBtn:hover {
+  background-color: #2980b9;
+}
+
+button#saveBtn {
+  background-color: #27ae60;
+  color: white;
+}
+
+button#saveBtn:hover {
+  background-color: #219653;
+}
+
+#savedFilters {
+  margin-top: 30px;
+  text-align: left;
+}
+
+#filtersList {
+  list-style-type: none;
+  padding: 0;
+}
+
+#filtersList li {
+  font-size: 18px;
+  margin-bottom: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+#clearBtn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+#clearBtn:hover {
+  background-color: #c0392b;
+}
