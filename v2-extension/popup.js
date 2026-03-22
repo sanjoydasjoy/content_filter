@@ -4,6 +4,7 @@ const filterInput = document.getElementById('filterInput');
 const addBtn = document.getElementById('addBtn');
 const clearBtn = document.getElementById('clearBtn');
 const scanBtn = document.getElementById('scanBtn');
+const webScrapeBtn = document.getElementById('webScrapeBtn');
 const filtersList = document.getElementById('filtersList');
 const statusMessage = document.getElementById('statusMessage');
 
@@ -116,6 +117,35 @@ async function requestRefreshAnalysis() {
   });
 }
 
+async function runWebScrapeScan() {
+  await withActiveTab(async (tabId) => {
+    const tab = await chrome.tabs.get(tabId);
+    if (!tab?.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
+      setStatus('Web scrap scan not supported on this tab');
+      return;
+    }
+
+    const response = await chrome.runtime.sendMessage({
+      action: 'webScrapeAnalyzeTab',
+      url: tab.url
+    });
+
+    if (!response?.ok) {
+      setStatus('Web scrap scan failed');
+      return;
+    }
+
+    await chrome.tabs.sendMessage(tabId, {
+      action: 'applyBlurFromWebScrape',
+      matchedImageUrls: response.matchedImageUrls || []
+    });
+
+    const keywordCount = (response.matchedKeywords || []).length;
+    const imageCount = (response.matchedImageUrls || []).length;
+    setStatus(`Web scrap done: ${keywordCount} keyword hit(s), ${imageCount} image hit(s)`);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const keywords = await loadKeywords();
   renderKeywords(keywords);
@@ -148,5 +178,12 @@ scanBtn.addEventListener('click', () => {
   requestStartAnalysis().catch((error) => {
     console.error('start scan failed', error);
     setStatus('Could not scan this tab');
+  });
+});
+
+webScrapeBtn.addEventListener('click', () => {
+  runWebScrapeScan().catch((error) => {
+    console.error('web scrape scan failed', error);
+    setStatus('Web scrap service not reachable');
   });
 });
