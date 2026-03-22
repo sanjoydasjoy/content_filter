@@ -1,0 +1,29 @@
+
+## Architecture Pipeline
+
+```bash
++-------------------+        +--------------------------+
+| User in Browser   | -----> | Popup UI (v2-extension)  |
+| Adds keywords     |        | add/remove/scan controls |
++-------------------+        +------------+-------------+
+                                          |
+                                          | chrome.runtime message
+                                          v
+                               +----------+-----------+
+                               | Background Worker    |
+                               | routing + decisions  |
+                               +----+-------------+---+
+                                    |             |
+                     local scan path|             |web scrap path
+                                    |             |
+                                    v             v
+                      +-------------+--+   +------+------------------+
+                      | Content Script |   | Web Scrap Service       |
+                      | read img attrs |   | localhost:8787          |
+                      | apply blur CSS |   | express + cheerio + api |
+                      +--------+-------+   +-----------+-------------+
+                               ^                       |
+                               | matched image URLs    |
+                               +-----------------------+
+```
+
