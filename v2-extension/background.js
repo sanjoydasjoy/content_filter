@@ -1,5 +1,7 @@
 const STORAGE_KEY = 'filterKeywords';
-const SCRAPER_SERVICE_URL = 'http://localhost:8787/analyze-page';
+const SCRAPER_BASE_URL = 'http://localhost:8787';
+const SCRAPER_SERVICE_URL = `${SCRAPER_BASE_URL}/analyze-page`;
+const SCRAPER_HEALTH_URL = `${SCRAPER_BASE_URL}/health`;
 
 function normalizeKeyword(value) {
   return String(value || '').trim().toLowerCase();
@@ -45,6 +47,15 @@ async function analyzePageViaScraper(url, keywords) {
   return response.json();
 }
 
+async function getScraperHealth() {
+  const response = await fetch(SCRAPER_HEALTH_URL, { method: 'GET' });
+  if (!response.ok) {
+    throw new Error(`scraper_health_error_${response.status}`);
+  }
+
+  return response.json();
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   (async () => {
     if (request?.action === 'analyzeImage') {
@@ -65,12 +76,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const result = await analyzePageViaScraper(request.url, keywords);
       sendResponse({
         ok: true,
+        mode: 'web-scrape',
         sourceUrl: result.sourceUrl,
+        title: result.title || '',
         matchedKeywords: result.matchedKeywords || [],
         matchedImageUrls: result.matchedImageUrls || [],
         imageCount: result.imageCount || 0,
         shouldBlur: Boolean(result.shouldBlur)
       });
+      return;
+    }
+
+    if (request?.action === 'getScraperHealth') {
+      const health = await getScraperHealth();
+      sendResponse({ ok: true, health });
       return;
     }
 

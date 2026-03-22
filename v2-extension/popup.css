@@ -49,6 +49,10 @@ h2 {
   margin-bottom: 12px;
 }
 
+.panel.compact {
+  padding: 10px 12px;
+}
+
 label {
   display: block;
   margin-bottom: 8px;
@@ -117,6 +121,12 @@ button.secondary:hover {
   min-height: 18px;
   margin-top: 8px;
   color: #93c5fd;
+  font-size: 12px;
+}
+
+.meta-line {
+  margin: 6px 0;
+  color: #cbd5e1;
   font-size: 12px;
 }
 

@@ -1,8 +1,5 @@
 # Web Scrap Service
 
-This service demonstrates web scraping implementation for the project and connects with `v2-extension`.
-
-## What it does
 - Scrapes a URL using `axios + cheerio`
 - Extracts title, text chunks, and image URLs
 - Matches those against user keywords

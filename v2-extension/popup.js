@@ -7,6 +7,11 @@ const scanBtn = document.getElementById('scanBtn');
 const webScrapeBtn = document.getElementById('webScrapeBtn');
 const filtersList = document.getElementById('filtersList');
 const statusMessage = document.getElementById('statusMessage');
+const scraperHealthText = document.getElementById('scraperHealth');
+const lastModeText = document.getElementById('lastMode');
+const lastStatsText = document.getElementById('lastStats');
+
+let scraperIsOnline = false;
 
 function normalizeKeyword(value) {
   return String(value || '').trim().toLowerCase();
@@ -108,6 +113,8 @@ async function requestStartAnalysis() {
   await withActiveTab(async (tabId) => {
     await chrome.tabs.sendMessage(tabId, { action: 'startAnalysis' });
     setStatus('Scan started on current tab');
+    lastModeText.textContent = 'Last mode: local metadata';
+    lastStatsText.textContent = 'Last result: local scan triggered';
   });
 }
 
@@ -125,30 +132,54 @@ async function runWebScrapeScan() {
       return;
     }
 
-    const response = await chrome.runtime.sendMessage({
-      action: 'webScrapeAnalyzeTab',
-      url: tab.url
-    });
+    try {
+      const response = await chrome.runtime.sendMessage({
+        action: 'webScrapeAnalyzeTab',
+        url: tab.url
+      });
 
-    if (!response?.ok) {
-      setStatus('Web scrap scan failed');
+      if (!response?.ok) {
+        throw new Error('web_scrape_failed');
+      }
+
+      const applyResponse = await chrome.tabs.sendMessage(tabId, {
+        action: 'applyBlurFromWebScrape',
+        matchedImageUrls: response.matchedImageUrls || []
+      });
+
+      const keywordCount = (response.matchedKeywords || []).length;
+      const imageCount = (response.matchedImageUrls || []).length;
+      const blurredCount = Number(applyResponse?.blurredCount || 0);
+
+      setStatus(`Web scrap done: ${keywordCount} keyword hit(s), ${imageCount} image hit(s)`);
+      lastModeText.textContent = 'Last mode: web scrape';
+      lastStatsText.textContent = `Last result: matched ${imageCount}, blurred ${blurredCount}`;
       return;
+    } catch (error) {
+      console.warn('web scrape mode failed, falling back to local mode', error);
+      await chrome.tabs.sendMessage(tabId, { action: 'startAnalysis' });
+      setStatus('Web scrap unavailable, local scan used');
+      lastModeText.textContent = 'Last mode: fallback local metadata';
+      lastStatsText.textContent = 'Last result: local fallback scan triggered';
     }
-
-    await chrome.tabs.sendMessage(tabId, {
-      action: 'applyBlurFromWebScrape',
-      matchedImageUrls: response.matchedImageUrls || []
-    });
-
-    const keywordCount = (response.matchedKeywords || []).length;
-    const imageCount = (response.matchedImageUrls || []).length;
-    setStatus(`Web scrap done: ${keywordCount} keyword hit(s), ${imageCount} image hit(s)`);
   });
+}
+
+async function refreshScraperHealth() {
+  try {
+    const response = await chrome.runtime.sendMessage({ action: 'getScraperHealth' });
+    scraperIsOnline = Boolean(response?.ok && response?.health?.ok);
+  } catch (error) {
+    scraperIsOnline = false;
+  }
+
+  scraperHealthText.textContent = `Scraper: ${scraperIsOnline ? 'online' : 'offline'}`;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   const keywords = await loadKeywords();
   renderKeywords(keywords);
+  await refreshScraperHealth();
 });
 
 filterInput.addEventListener('keydown', (event) => {
@@ -185,5 +216,7 @@ webScrapeBtn.addEventListener('click', () => {
   runWebScrapeScan().catch((error) => {
     console.error('web scrape scan failed', error);
     setStatus('Web scrap service not reachable');
+    lastModeText.textContent = 'Last mode: web scrape';
+    lastStatsText.textContent = 'Last result: failed';
   });
 });
