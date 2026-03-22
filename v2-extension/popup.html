@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Filter V2</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="app">
+    <h1>Content Filter V2</h1>
+    <p class="subtitle">Manage keywords and run a scan on the active tab.</p>
+
+    <section class="panel">
+      <label for="filterInput">Keyword</label>
+      <div class="row">
+        <input id="filterInput" type="text" placeholder="e.g. nsfw, adult, explicit">
+        <button id="addBtn" type="button">Add</button>
+      </div>
+      <small id="statusMessage" class="status"></small>
+    </section>
+
+    <section class="panel">
+      <h2>Saved Keywords</h2>
+      <ul id="filtersList" class="filters-list"></ul>
+      <div class="row">
+        <button id="scanBtn" type="button">Scan Current Tab</button>
+        <button id="clearBtn" type="button" class="danger">Clear All</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

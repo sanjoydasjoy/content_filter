@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Content Filter V2",
+  "version": "2.0.0",
+  "description": "Local-first browser content filtering extension with user-defined keyword-based image blurring.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
