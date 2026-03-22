@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'filterKeywords';
+const SCRAPER_SERVICE_URL = 'http://localhost:8787/analyze-page';
 
 function normalizeKeyword(value) {
   return String(value || '').trim().toLowerCase();
@@ -28,6 +29,22 @@ function shouldBlurImageFromMetadata(metadata, keywords) {
   return keywords.some((keyword) => candidateText.includes(keyword));
 }
 
+async function analyzePageViaScraper(url, keywords) {
+  const response = await fetch(SCRAPER_SERVICE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ url, keywords })
+  });
+
+  if (!response.ok) {
+    throw new Error(`scraper_service_error_${response.status}`);
+  }
+
+  return response.json();
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   (async () => {
     if (request?.action === 'analyzeImage') {
@@ -40,6 +57,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request?.action === 'getFilterKeywords') {
       const keywords = await getFilterKeywords();
       sendResponse({ keywords });
+      return;
+    }
+
+    if (request?.action === 'webScrapeAnalyzeTab') {
+      const keywords = await getFilterKeywords();
+      const result = await analyzePageViaScraper(request.url, keywords);
+      sendResponse({
+        ok: true,
+        sourceUrl: result.sourceUrl,
+        matchedKeywords: result.matchedKeywords || [],
+        matchedImageUrls: result.matchedImageUrls || [],
+        imageCount: result.imageCount || 0,
+        shouldBlur: Boolean(result.shouldBlur)
+      });
       return;
     }
 

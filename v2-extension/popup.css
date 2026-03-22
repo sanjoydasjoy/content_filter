@@ -61,6 +61,10 @@ label {
   gap: 8px;
 }
 
+.row-top-gap {
+  margin-top: 8px;
+}
+
 input {
   flex: 1;
   border: 1px solid rgba(148, 163, 184, 0.3);
@@ -96,6 +100,16 @@ button.danger {
 
 button.danger:hover {
   background: var(--danger-hover);
+}
+
+button.secondary {
+  width: 100%;
+  background: #334155;
+  color: #e2e8f0;
+}
+
+button.secondary:hover {
+  background: #475569;
 }
 
 .status {
