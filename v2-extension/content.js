@@ -93,6 +93,36 @@ function reprocessAll() {
   scanExistingImages();
 }
 
+function normalizeComparableUrl(url) {
+  return String(url || '').split('?')[0].split('#')[0].toLowerCase();
+}
+
+function applyBlurFromMatchedUrls(matchedImageUrls) {
+  const candidates = Array.isArray(matchedImageUrls)
+    ? matchedImageUrls.map((value) => normalizeComparableUrl(value)).filter(Boolean)
+    : [];
+
+  if (!candidates.length) {
+    return 0;
+  }
+
+  let blurredCount = 0;
+  document.querySelectorAll('img').forEach((img) => {
+    const src = normalizeComparableUrl(img.currentSrc || img.src || '');
+    if (!src) {
+      return;
+    }
+
+    const hit = candidates.some((candidate) => src === candidate || src.includes(candidate) || candidate.includes(src));
+    if (hit) {
+      img.classList.add(BLUR_CLASS);
+      blurredCount += 1;
+    }
+  });
+
+  return blurredCount;
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request?.action === 'startAnalysis') {
     reprocessAll();
@@ -102,6 +132,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request?.action === 'refreshAnalysis') {
     reprocessAll();
     sendResponse({ refreshed: true });
+  }
+
+  if (request?.action === 'applyBlurFromWebScrape') {
+    const blurredCount = applyBlurFromMatchedUrls(request.matchedImageUrls);
+    sendResponse({ applied: true, blurredCount });
   }
 });
 
